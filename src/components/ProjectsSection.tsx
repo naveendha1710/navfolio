@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ExternalLink, Layers, Cpu, Server } from 'lucide-react';
 import { CreepyButton } from './ui/creepy-button';
 import project1Img from '../assets/projects_image/project_1.png';
@@ -24,12 +24,12 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 // Stagger container for letter-by-letter heading reveal
-const headingContainer = {
+const headingContainer: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.045, delayChildren: 0.1 } }
 };
-const letterVariant = {
-  hidden: { opacity: 0, y: 50, rotateX: -30, clipPath: 'inset(100% 0 0 0)', transition: { duration: 0.35, ease: 'easeIn' } },
+const letterVariant: Variants = {
+  hidden: { opacity: 0, y: 50, rotateX: -30, clipPath: 'inset(100% 0 0 0)', transition: { duration: 0.35, ease: 'easeIn' as const } },
   show:   { opacity: 1, y: 0,   rotateX: 0,   clipPath: 'inset(0% 0 0 0)',
     transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } }
 };
