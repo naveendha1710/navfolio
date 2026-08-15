@@ -2,6 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [
@@ -15,22 +19,34 @@ export default defineConfig({
   },
   assetsInclude: ['**/*.glb'],
   build: {
-    // Code splitting for large vendor chunks
+    // Code splitting for large vendor chunks (function format compatible with Rolldown & Rollup)
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/rapier'],
-          'vendor-gsap': ['gsap'],
-          'vendor-motion': ['framer-motion'],
-          'vendor-lenis': ['lenis'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react/') || id.includes('react-dom/')) {
+              return 'vendor-react';
+            }
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('gsap')) {
+              return 'vendor-gsap';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lenis')) {
+              return 'vendor-lenis';
+            }
+          }
         },
       },
     },
     // Increase chunk size warning threshold (three.js is large by nature)
     chunkSizeWarningLimit: 1000,
-    // Use terser-compatible minification
-    minify: 'esbuild',
+    // Use oxc minification (Vite 8 default)
+    minify: 'oxc',
     target: 'esnext',
     sourcemap: false,
   },
