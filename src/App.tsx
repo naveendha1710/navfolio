@@ -28,6 +28,7 @@ const FaqAccordion = lazy(() => import('./components/ui/faq-accordion'))
 const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
+const CurvedInput = lazy(() => import('./components/ui/curved-input'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -407,8 +408,8 @@ export default function App() {
           <ProjectsSection />
         </Suspense>
 
-        {/* Section 6: Fluid Morph Background Section with FAQ Accordion (Left) & Contact Links (Right) */}
-        <section className="relative z-30 w-full min-h-[650px] sm:min-h-[850px] flex items-center justify-center px-6 sm:px-12 lg:px-16 py-20 overflow-hidden">
+        {/* Section 6: Fluid Morph Background Section with FAQ Accordion (Left) & Contact Links (Right) & CurvedInput (Bottom Center) */}
+        <section className="relative z-30 w-full min-h-[650px] sm:min-h-[850px] flex flex-col items-center justify-center px-6 sm:px-12 lg:px-16 py-20 overflow-hidden">
           {/* Seamless top gradient fade from Projects section (#f6f6f8) into Fluid Morph shapes */}
           <div className="absolute top-0 inset-x-0 h-44 bg-gradient-to-b from-[#f6f6f8] via-[#f6f6f8]/75 to-transparent z-10 pointer-events-none" />
           <Suspense fallback={null}>
@@ -492,6 +493,36 @@ export default function App() {
                   />
                 </Suspense>
               </div>
+            </div>
+          </div>
+
+          {/* CurvedInput text box at bottom of page with matching UI */}
+          <div className="relative z-20 w-full flex justify-center pt-14 sm:pt-20">
+            <div className="w-full max-w-lg">
+              <Suspense fallback={null}>
+                <CurvedInput
+                  theme="light"
+                  placeholder="Enter your email to connect..."
+                  buttonText="Get Started"
+                  backgroundColor="#ffffff"
+                  textColor="#1e293b"
+                  placeholderColor="#94a3b8"
+                  borderColor="#cbd5e1"
+                  buttonColor="#334155"
+                  buttonTextColor="#ffffff"
+                  iconColor="#334155"
+                  shadowSize="md"
+                  shadowColor="#64748b"
+                  bend={24}
+                  height={60}
+                  width="100%"
+                  onSubmit={(val) => {
+                    if (val) {
+                      window.location.href = `mailto:nav.cs@outlook.com?subject=Message%20from%20Portfolio&body=${encodeURIComponent(val)}`;
+                    }
+                  }}
+                />
+              </Suspense>
             </div>
           </div>
         </section>
