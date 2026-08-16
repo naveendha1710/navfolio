@@ -23,36 +23,20 @@ export const LinePath = memo(function LinePath({
 
   const applyDash = (fraction: number) => {
     const el = pathRef.current;
-    if (!el) {
-      console.warn("[LinePath] applyDash — pathRef.current is NULL");
-      return;
-    }
+    if (!el) return;
     const totalLength = el.getTotalLength();
-    console.log(`[LinePath] applyDash fraction=${fraction.toFixed(3)} totalLength=${totalLength.toFixed(1)}`);
-    if (!totalLength) {
-      console.error("[LinePath] getTotalLength() returned 0 — SVG not painted yet");
-      return;
-    }
+    if (!totalLength) return;
     el.style.strokeDasharray = `${totalLength}`;
     el.style.strokeDashoffset = `${totalLength * (1 - fraction)}`;
-    console.log(`[LinePath] ✅ dash applied: dasharray=${totalLength.toFixed(0)} dashoffset=${(totalLength * (1 - fraction)).toFixed(0)}`);
   };
 
   useMotionValueEvent(drawFraction, "change", applyDash);
 
   useEffect(() => {
-    console.log("[LinePath] Mounted — scheduling rAF to seed initial dash");
     const id = requestAnimationFrame(() => {
-      const el = pathRef.current;
-      console.log("[LinePath] rAF fired — pathRef.current:", el);
-      console.log("[LinePath] scrollYProgress.get():", scrollYProgress.get());
-      console.log("[LinePath] drawFraction.get():", drawFraction.get());
       applyDash(drawFraction.get());
     });
-    return () => {
-      cancelAnimationFrame(id);
-      console.log("[LinePath] Unmounted");
-    };
+    return () => cancelAnimationFrame(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
