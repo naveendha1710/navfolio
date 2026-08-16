@@ -11,10 +11,14 @@
     <title>Navfolio - AI/ML | AI Developer | PC Hardware & Tech Enthusiast</title>
     <meta name="description" content="Portfolio of Naveen Kumar S — AI/ML student and developer." />
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter loaded eagerly (used by LCP hero text + body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Fira Code + JetBrains Mono: deferred (below-fold / non-LCP fonts) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"></noscript>
   </head>
   <body class="bg-[#05070a] text-slate-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-300 font-sans min-h-screen overflow-x-hidden">
     <div id="root"></div>

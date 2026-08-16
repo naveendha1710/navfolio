@@ -20,6 +20,14 @@ export interface TextTypeProps extends React.HTMLAttributes<HTMLElement> {
   onSentenceComplete?: (sentence: string, index: number) => void;
   startOnVisible?: boolean;
   reverseMode?: boolean;
+  /**
+   * LCP optimisation: when true, renders a visually-hidden (opacity:0,
+   * position:absolute) copy of the full first text on the very first render so
+   * the browser can discover the LCP element immediately.
+   * The hint is removed once the typewriter finishes the first sentence.
+   * Does NOT affect visible layout or the animation.
+   */
+  lcpHint?: boolean;
 }
 
 export default function TextType({
@@ -41,6 +49,7 @@ export default function TextType({
   onSentenceComplete,
   startOnVisible = false,
   reverseMode = false,
+  lcpHint = false,
   ...props
 }: TextTypeProps) {
   const [displayedText, setDisplayedText] = useState('');
@@ -48,6 +57,9 @@ export default function TextType({
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(!startOnVisible);
+  // Track whether the typewriter has completed its first sentence (used to
+  // remove the LCP hint span once the animation has fully rendered the text).
+  const [lcpHintDone, setLcpHintDone] = useState(false);
   const cursorRef = useRef<HTMLSpanElement | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
   const sentenceCompletedFiredRef = useRef<boolean>(false);
@@ -138,6 +150,10 @@ export default function TextType({
             sentenceCompletedFiredRef.current = true;
             onSentenceComplete(textArray[currentTextIndex], currentTextIndex);
           }
+          // First sentence done — we can drop the LCP hint span
+          if (lcpHint && !lcpHintDone) {
+            setLcpHintDone(true);
+          }
 
           if (!loop && currentTextIndex === textArray.length - 1) return;
 
@@ -176,6 +192,9 @@ export default function TextType({
   const shouldHideCursor =
     hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
 
+  // The first text is what the LCP hint should mirror.
+  const firstText = Array.isArray(text) ? text[0] : text;
+
   return createElement(
     Component,
     {
@@ -183,6 +202,27 @@ export default function TextType({
       className: `inline-block whitespace-pre-wrap tracking-tight ${className}`,
       ...props
     },
+    // ── LCP hint ─────────────────────────────────────────────────────────────
+    // Rendered on first paint so the browser has an LCP-eligible text node.
+    // Visually invisible (opacity:0) and removed from the a11y tree (aria-hidden).
+    // Positioned absolute so it takes zero layout space and causes no CLS.
+    // Removed from DOM once the typewriter has completed the first sentence.
+    lcpHint && !lcpHintDone && (
+      <span
+        key="lcp-hint"
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          opacity: 0,
+          pointerEvents: 'none',
+          userSelect: 'none',
+          whiteSpace: 'pre'
+        }}
+      >
+        {firstText}
+      </span>
+    ),
+    // ── Animated typewriter text ──────────────────────────────────────────────
     <span className="inline" style={{ color: getCurrentTextColor() || 'inherit' }}>
       {displayedText}
     </span>,
