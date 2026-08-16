@@ -2,13 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Monitor } from "lucide-react";
+
+const bull = (
+  <span className="inline-block mx-0.5 text-slate-400 font-bold transform scale-90 select-none">
+    •
+  </span>
+);
 
 export function MobileDesktopNotice() {
   const [showNotice, setShowNotice] = useState(false);
 
   useEffect(() => {
-    // Check if device is mobile width (< 768px) and notice has not been dismissed in session
     const isMobile = window.innerWidth < 768;
     const dismissed = sessionStorage.getItem("mobile_notice_dismissed");
 
@@ -30,37 +34,48 @@ export function MobileDesktopNotice() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[999] backdrop-blur-2xl bg-slate-950/85 flex items-center justify-center p-6 select-none"
+          className="fixed inset-0 z-[999] backdrop-blur-md bg-slate-950/70 flex items-center justify-center p-5 select-none"
         >
           <motion.div
-            initial={{ scale: 0.88, y: 20, opacity: 0 }}
+            initial={{ scale: 0.9, y: 15, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.88, y: 20, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
-            className="w-full max-w-sm rounded-2xl bg-slate-900/95 border border-slate-800 p-7 text-center shadow-[0_25px_60px_rgba(0,0,0,0.6)] flex flex-col items-center gap-5"
+            exit={{ scale: 0.9, y: 15, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="min-w-[280px] max-w-sm w-full bg-white text-slate-900 rounded-lg shadow-2xl overflow-hidden border border-slate-200/80"
           >
-            {/* Monitor Icon Badge */}
-            <div className="w-14 h-14 rounded-full bg-[#a14a6e]/20 border border-[#b15382]/40 flex items-center justify-center text-[#edcee2] shadow-inner">
-              <Monitor className="w-7 h-7" />
-            </div>
-
-            {/* Title & Description */}
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white tracking-tight font-sans">
-                Desktop Recommended
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed">
-                For the best interactive experience with 3D physics, custom shaders, and smooth canvas graphics, we recommend viewing this portfolio on a Desktop.
+            {/* CardContent */}
+            <div className="p-6 text-left font-sans">
+              <p className="text-xs text-slate-500 font-medium tracking-wide mb-1">
+                System Recommendation
               </p>
+
+              <h3 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center mb-1">
+                Desktop Mode
+              </h3>
+
+              <p className="text-xs text-slate-500 font-mono tracking-wider mb-3">
+                optimal viewing
+              </p>
+
+              <div className="text-sm text-slate-700 leading-relaxed font-sans space-y-2">
+                <p>
+                  For interactive 3D physics, custom shaders, and smooth canvas graphics, we recommend viewing this portfolio on a Desktop.
+                </p>
+                <p className="text-xs italic text-slate-500">
+                  &ldquo;A smoother, full-screen interactive experience&rdquo;
+                </p>
+              </div>
             </div>
 
-            {/* Action Button */}
-            <button
-              onClick={handleDismiss}
-              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#a14a6e] to-[#b15382] text-white font-mono text-sm font-bold shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer mt-1"
-            >
-              Got it!
-            </button>
+            {/* CardActions */}
+            <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={handleDismiss}
+                className="px-4 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#a14a6e] hover:bg-[#a14a6e]/10 rounded transition-colors cursor-pointer outline-none"
+              >
+                Got it!
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}
