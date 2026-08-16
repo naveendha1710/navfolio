@@ -42,6 +42,7 @@ const HeroHeader = memo(function HeroHeader({ onCardClick, isCardActive = false 
         loop={false}
         onSentenceComplete={handleWelcomeComplete}
         className="text-6xl sm:text-7xl lg:text-8xl font-extrabold text-[#a14a6e] leading-tight tracking-tight"
+        lcpHint={true}
       />
 
       {/* Line 2: Good to see you! */}

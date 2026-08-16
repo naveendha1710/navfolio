@@ -8,9 +8,11 @@ import mcBookImg from './assets/lanyard_img/MC_book.png'
 
 // Eagerly loaded (above-the-fold critical components)
 import Navbar from './components/Navbar'
-import FaultyTerminal from './components/FaultyTerminal'
 import HeroHeader from './components/HeroHeader'
 import TargetCursor from './components/TargetCursor'
+
+// FaultyTerminal: lazy + deferred so OGL/WebGL doesn't block the LCP render
+const FaultyTerminal = lazy(() => import('./components/FaultyTerminal'))
 
 // Lazily loaded (below-the-fold, heavy components)
 const Lanyard = lazy(() => import('./components/Lanyard'))
@@ -145,6 +147,9 @@ export default function App() {
   const [lanyardReady, setLanyardReady] = useState(false) // delayed mount to let OGL context release
   const [showScrollHint, setShowScrollHint] = useState(false)
   const [isBookOpen, setIsBookOpen] = useState(false)
+  // Defer FaultyTerminal mount until after the first paint so OGL/WebGL
+  // initialisation does not compete with the LCP text render.
+  const [faultyReady, setFaultyReady] = useState(false)
 
   const section3Ref = useRef<HTMLDivElement | null>(null)
   const combinedSectionsRef = useRef<HTMLDivElement | null>(null)
@@ -179,6 +184,20 @@ export default function App() {
     }
   }, [])
 
+  // Mount FaultyTerminal only after the browser has had a chance to paint the
+  // initial hero content. requestIdleCallback is ideal; setTimeout(0) is the
+  // fallback for Safari which lacks rIC.
+  useEffect(() => {
+    let id: number
+    if (typeof requestIdleCallback !== 'undefined') {
+      id = requestIdleCallback(() => setFaultyReady(true))
+      return () => cancelIdleCallback(id)
+    } else {
+      const t = setTimeout(() => setFaultyReady(true), 0)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
   // Stable callback - won't change between renders
   const handleCardClick = useCallback(() => {
     setShowCard(prev => !prev)
@@ -192,7 +211,6 @@ export default function App() {
       return
     }
     const timer = setTimeout(() => {
-      console.log('[App] lanyardReady → true (OGL context should be released)')
       setLanyardReady(true)
     }, 250)
     return () => clearTimeout(timer)
@@ -244,27 +262,31 @@ export default function App() {
 
       {/* Section 1: Hero */}
       <div className="relative min-h-screen w-full overflow-hidden">
-        {/* FaultyTerminal — stays active and running continuously */}
+        {/* FaultyTerminal — lazy + deferred so WebGL doesn't block first paint */}
         <div className="fixed inset-0 z-0 opacity-90 pointer-events-none">
-          <FaultyTerminal
-            scale={2.3}
-            gridMul={FAULTY_GRID_MUL}
-            digitSize={1.1}
-            timeScale={1}
-            pause={false}
-            scanlineIntensity={1}
-            glitchAmount={1}
-            flickerAmount={1}
-            noiseAmp={1}
-            chromaticAberration={0}
-            dither={0}
-            curvature={0.17}
-            tint="#b15382"
-            mouseReact={true}
-            mouseStrength={0.4}
-            pageLoadAnimation={false}
-            brightness={0.6}
-          />
+          {faultyReady && (
+            <Suspense fallback={null}>
+              <FaultyTerminal
+                scale={2.3}
+                gridMul={FAULTY_GRID_MUL}
+                digitSize={1.1}
+                timeScale={1}
+                pause={false}
+                scanlineIntensity={1}
+                glitchAmount={1}
+                flickerAmount={1}
+                noiseAmp={1}
+                chromaticAberration={0}
+                dither={0}
+                curvature={0.17}
+                tint="#b15382"
+                mouseReact={true}
+                mouseStrength={0.4}
+                pageLoadAnimation={false}
+                brightness={0.6}
+              />
+            </Suspense>
+          )}
         </div>
 
         <div className="fixed inset-0 z-1 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_65%,#05070a_98%)] opacity-40" />

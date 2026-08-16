@@ -2,9 +2,9 @@ import React, { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ExternalLink, Layers, Cpu, Server } from 'lucide-react';
 import { CreepyButton } from './ui/creepy-button';
-import project1Img from '../assets/projects_image/project_1.png';
-import project2Img from '../assets/projects_image/project_2.png';
-import project3Img from '../assets/projects_image/project_3.png';
+import project1Img from '../assets/projects_image/project_1.webp';
+import project2Img from '../assets/projects_image/project_2.webp';
+import project3Img from '../assets/projects_image/project_3.webp';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg

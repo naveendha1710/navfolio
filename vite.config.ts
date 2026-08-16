@@ -51,7 +51,7 @@ export default defineConfig({
     sourcemap: false,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion', 'gsap', 'lenis', 'three'],
+    include: ['react', 'react-dom', 'framer-motion', 'gsap', 'lenis'],
     exclude: [],
   },
 });

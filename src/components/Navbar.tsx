@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import { PopButton } from './ui/pop-button'
-import resumePdf from '../assets/resume_pdf/Resume - nav.cs@outlook.com.pdf'
+
 
 const Navbar = memo(function Navbar() {
   const handleProjectsClick = useCallback(() => {
@@ -12,7 +12,7 @@ const Navbar = memo(function Navbar() {
 
   const handleResumeClick = useCallback(() => {
     const link = document.createElement('a')
-    link.href = resumePdf
+    link.href = '/resume.pdf'
     link.download = 'Resume - nav.cs@outlook.com.pdf'
     document.body.appendChild(link)
     link.click()
