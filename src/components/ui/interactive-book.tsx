@@ -132,31 +132,43 @@ export default function InteractiveBook({
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                             style={{ backgroundImage: `url(${coverImage})` }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                        <div className="absolute bottom-4 left-3 right-3 text-white text-left">
-                            <h1 className="text-sm font-serif font-bold tracking-wide mb-1 drop-shadow-md leading-tight">{bookTitle}</h1>
-                            <p className="text-[8px] font-sans tracking-widest opacity-90 uppercase border-t border-white/30 pt-1 inline-block">{bookAuthor}</p>
-                        </div>
 
                         {/* Spine Highlight */}
                         <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white/30 to-transparent opacity-40" />
                         <div className="absolute left-[12px] top-0 bottom-0 w-[1px] bg-black/30" />
                     </div>
 
-                    {/* Back Face (Inner Cover) */}
+                    {/* Back Face (Inner Cover - First Left Page: Index) */}
                     <div
-                        className="absolute inset-0 w-full h-full backface-hidden rounded-l-md rounded-r-sm bg-[#fdfbf7] rotate-y-180 flex flex-col p-8 border-r border-neutral-200 shadow-xl cursor-pointer hover:bg-[#fcfaf5] transition-colors"
+                        className="absolute inset-0 w-full h-full backface-hidden rounded-l-md rounded-r-sm bg-[#fdfbf7] rotate-y-180 flex flex-col p-6 sm:p-8 border-r border-neutral-200 shadow-xl cursor-pointer hover:bg-[#fcfaf5] transition-colors select-none font-serif text-neutral-800"
                         style={{ transform: 'rotateY(180deg) translateZ(0.5px)' }}
                         onClick={(e) => {
                             e.stopPropagation();
                             prevPage();
                         }}
                     >
-                        <div className="flex-1 flex flex-col justify-center items-center text-center opacity-80">
-                            <h2 className="text-2xl font-serif text-neutral-800 mb-2 tracking-wide">{bookTitle}</h2>
-                            <div className="w-8 h-[1px] bg-neutral-300 mb-3" />
-                            <p className="text-xs text-neutral-500 uppercase tracking-widest">Interactive Edition</p>
+                        <div className="flex-1 flex flex-col justify-start items-center text-center">
+                            {/* Header */}
+                            <h2 className="text-xl font-bold font-serif text-neutral-900 tracking-wider uppercase mb-1">
+                                Index
+                            </h2>
+                            <div className="w-12 h-[1px] bg-neutral-400 mb-6" />
+
+                            {/* Table of Contents List */}
+                            <div className="w-full space-y-4 text-left font-serif text-xs sm:text-sm leading-relaxed">
+                                <div className="flex justify-between items-baseline border-b border-dotted border-neutral-300 pb-1">
+                                    <span className="font-semibold text-neutral-900">01. How it Started</span>
+                                    <span className="font-mono text-[10px] text-neutral-400">p. 01</span>
+                                </div>
+                                <div className="flex justify-between items-baseline border-b border-dotted border-neutral-300 pb-1">
+                                    <span className="font-semibold text-neutral-900">02. Under the Hood</span>
+                                    <span className="font-mono text-[10px] text-neutral-400">p. 02</span>
+                                </div>
+                                <div className="flex justify-between items-baseline border-b border-dotted border-neutral-300 pb-1">
+                                    <span className="font-semibold text-neutral-900">03. The Shift</span>
+                                    <span className="font-mono text-[10px] text-neutral-400">p. 03</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </motion.div>

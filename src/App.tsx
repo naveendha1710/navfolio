@@ -4,6 +4,8 @@ import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+import mcBookImg from './assets/lanyard_img/MC_book.png'
+
 // Eagerly loaded (above-the-fold critical components)
 import Navbar from './components/Navbar'
 import FaultyTerminal from './components/FaultyTerminal'
@@ -355,8 +357,7 @@ export default function App() {
                 <div className="flex-shrink-0 cursor-target [transform:rotateY(-12deg)_rotateZ(-2deg)] [transform-style:preserve-3d] transition-transform duration-700">
                   <Suspense fallback={null}>
                     <InteractiveBook
-                      coverImage="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=1000&auto=format&fit=crop"
-                      bookTitle="The Origin Story"
+                      coverImage={mcBookImg}
                       bookAuthor="Naveen Kumar S"
                       width={330}
                       height={473}
