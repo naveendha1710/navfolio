@@ -26,6 +26,7 @@ const ProjectsSection = lazy(() => import('./components/ProjectsSection'))
 const FluidMorphBg = lazy(() => import('./components/FluidMorphBg'))
 const FaqAccordion = lazy(() => import('./components/ui/faq-accordion'))
 const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
+const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -87,7 +88,7 @@ const sampleBookPages = [
           Then, one day, he was reading about Artificial Intelligence. What caught his attention wasn't just the smart software—it was how incredibly hardware-hungry it was.
         </p>
         <p>
-          Training neural networks requires massive compute power and optimized architecture. He had spent years figuring out how to push a weak laptop to its absolute limits, so naturally, Curious, he opened a new tab, ready to see exactly how it worked.
+          Training neural networks requires massive compute power and optimized architecture. He had spent... figuring out how to push a weak laptop to its absolute limits, so naturally... Curious... he opened a new tab... ready to see exactly how it worked!.
         </p>
       </div>
     )
@@ -367,20 +368,22 @@ export default function App() {
                   </Suspense>
                 </div>
 
-                {/* Right: ScrollFloat "About me" */}
+                {/* Right: ScrollFloat "About me" with SquigglyText effect */}
                 <div className={scrollFloatContainerClass}>
                   <Suspense fallback={null}>
-                    <ScrollFloat
-                      animationDuration={1.2}
-                      ease="back.inOut(2)"
-                      scrollStart="center bottom+=50%"
-                      scrollEnd="bottom bottom-=30%"
-                      stagger={0.035}
-                      containerClassName="my-0 leading-none"
-                      textClassName="text-7xl sm:text-8xl lg:text-[9.5rem] font-black text-white tracking-tight whitespace-nowrap drop-shadow-2xl"
-                    >
-                      About me
-                    </ScrollFloat>
+                    <SquigglyText scale={[4, 6]} baseFrequency={0.025} stepDuration={75}>
+                      <ScrollFloat
+                        animationDuration={1.2}
+                        ease="back.inOut(2)"
+                        scrollStart="center bottom+=50%"
+                        scrollEnd="bottom bottom-=30%"
+                        stagger={0.035}
+                        containerClassName="my-0 leading-none"
+                        textClassName="text-7xl sm:text-8xl lg:text-[9.5rem] font-black text-white tracking-tight whitespace-nowrap drop-shadow-2xl"
+                      >
+                        About me
+                      </ScrollFloat>
+                    </SquigglyText>
                   </Suspense>
                 </div>
               </div>

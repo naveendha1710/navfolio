@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback, memo } from 'react'
 import TextType from './TextType'
+import { MagneticButton } from './ui/magnetic-button'
+import { PixelDissolveButton } from './ui/pixel-dissolve-button'
 
 export interface HeroHeaderProps {
   onCardClick?: () => void
@@ -56,19 +58,22 @@ const HeroHeader = memo(function HeroHeader({ onCardClick, isCardActive = false 
         />
       )}
 
-      {/* Click Here Button */}
+      {/* Magnetic Click Here Button with Pixel Dissolve Effect */}
       {!isGlitchedOut && (
         <div
           className={`w-full flex justify-start items-center pt-6 transition-opacity duration-700 ${
             goodToSeeYouDone ? 'opacity-100' : 'opacity-0 pointer-events-none'
           } ${isCardActive ? 'animate-glitch-out' : ''}`}
         >
-          <button
-            onClick={onCardClick}
-            className="cursor-target px-5 py-2.5 rounded bg-white/5 border border-white/10 text-[#edcee2] font-mono text-xl sm:text-2xl font-bold hover:bg-white/10 transition-colors"
-          >
-            Click Here
-          </button>
+          <PixelDissolveButton onClick={onCardClick}>
+            <MagneticButton accentColor="#b15382">
+              <button
+                className="cursor-pointer rounded-lg bg-gradient-to-b from-[#a14a6e] to-[#7b2c4e] px-6 py-2.5 font-medium text-[#edcee2] ring-1 ring-[#edcee2]/30 ring-offset-1 ring-offset-[#a14a6e] transition-transform duration-150 ring-inset active:scale-95 text-lg sm:text-xl font-mono font-bold shadow-xl hover:from-[#b15382] hover:to-[#8c355f]"
+              >
+                Click Here
+              </button>
+            </MagneticButton>
+          </PixelDissolveButton>
         </div>
       )}
     </div>
