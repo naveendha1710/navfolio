@@ -27,6 +27,7 @@ const FluidMorphBg = lazy(() => import('./components/FluidMorphBg'))
 const FaqAccordion = lazy(() => import('./components/ui/faq-accordion'))
 const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
+const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -226,6 +227,11 @@ export default function App() {
     <div className="min-h-screen bg-[#05070a] text-slate-100 relative font-sans selection:bg-purple-500/30 selection:text-purple-300">
       {/* Top Transparent Navbar */}
       <Navbar />
+
+      {/* Mobile Desktop Recommendation Notice Overlay */}
+      <Suspense fallback={null}>
+        <MobileDesktopNotice />
+      </Suspense>
 
       {/* Target Cursor — eagerly loaded, first-page only */}
       <TargetCursor

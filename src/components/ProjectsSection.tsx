@@ -53,7 +53,7 @@ const projectsData: Project[] = [
     id: "project-1",
     numberLabel: "Project 1",
     title: "ERP System",
-    subtitle: "Full Stack + AI Workflow System",
+    subtitle: "Full Stack with AI",
     techStack: ["React.js", "Node.js", "TypeScript", "PostgreSQL", "Supabase", "MCP"],
     bullets: [
       "Built a production-grade ERP handling Tenant, Asset management, Helpdesk and 50,000+ tracked assets",
