@@ -9,6 +9,7 @@ interface Env {
 interface ContactEventContext {
   request: Request;
   env: Env;
+  waitUntil?: (promise: Promise<any>) => void;
 }
 
 const corsHeaders = {
@@ -27,6 +28,8 @@ export const onRequestOptions = async () => {
 export const onRequestPost = async (context: ContactEventContext) => {
   const { request, env } = context;
 
+  console.log('[API /api/contact] Received new contact request.');
+
   let email = '';
 
   try {
@@ -38,7 +41,8 @@ export const onRequestPost = async (context: ContactEventContext) => {
       const formData = await request.formData().catch(() => new FormData());
       email = formData.get('email')?.toString() || '';
     }
-  } catch {
+  } catch (err: any) {
+    console.error('[API /api/contact] Request body parsing error:', err);
     return new Response(
       JSON.stringify({ success: false, error: 'Invalid request payload.' }),
       {
@@ -52,6 +56,7 @@ export const onRequestPost = async (context: ContactEventContext) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+    console.warn(`[API /api/contact] Invalid email format submitted: "${trimmedEmail}"`);
     return new Response(
       JSON.stringify({ success: false, error: 'Please enter a valid email address.' }),
       {
@@ -63,10 +68,14 @@ export const onRequestPost = async (context: ContactEventContext) => {
 
   // Environment Variables
   const brevoApiKey = env.BREVO_API_KEY;
-  const fromEmail = env.BREVO_FROM_EMAIL || env.CONTACT_TO_EMAIL || 'nav.cs@outlook.com';
-  const fromName = env.BREVO_FROM_NAME || 'Naveen Kumar S';
   const myEmail = env.CONTACT_TO_EMAIL || 'nav.cs@outlook.com';
+  const fromName = env.BREVO_FROM_NAME || 'Naveen Kumar S';
+  const fromEmail = env.BREVO_FROM_EMAIL || myEmail;
   const sheetsWebhookUrl = env.SHEETS_WEBHOOK_URL;
+
+  console.log(`[API /api/contact] Target visitor: ${trimmedEmail}`);
+  console.log(`[API /api/contact] From Email: ${fromEmail}, Reply-To: ${myEmail}`);
+  console.log(`[API /api/contact] Sheets Webhook URL configured: ${sheetsWebhookUrl ? 'YES' : 'NO'}`);
 
   if (!brevoApiKey) {
     console.error('[Brevo Error] BREVO_API_KEY environment variable is missing.');
@@ -128,9 +137,10 @@ Naveen Kumar S
 ${myEmail}
     `;
 
-  // 1. Send Thank You Email to the visitor
+  // 1. Send Thank You Email to the visitor with replyTo set to your email
   const visitorEmailPayload = {
     sender: { name: fromName, email: fromEmail },
+    replyTo: { name: fromName, email: myEmail },
     to: [{ email: trimmedEmail }],
     subject: emailSubject,
     htmlContent: emailHtml,
@@ -140,6 +150,7 @@ ${myEmail}
   // 2. Lead notification to yourself
   const leadNotificationPayload = {
     sender: { name: fromName, email: fromEmail },
+    replyTo: { name: fromName, email: trimmedEmail },
     to: [{ email: myEmail }],
     subject: `🚀 New Lead Captured: ${trimmedEmail}`,
     htmlContent: `
@@ -151,10 +162,10 @@ ${myEmail}
     `,
   };
 
-  let emailSent = false;
+  let brevoSuccess = false;
 
   try {
-    // Send email to visitor
+    console.log('[Brevo] Dispatching email to visitor...');
     const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -165,19 +176,21 @@ ${myEmail}
       body: JSON.stringify(visitorEmailPayload),
     });
 
+    const brevoStatus = brevoResponse.status;
+    const brevoResponseBody = await brevoResponse.text().catch(() => '');
+
     if (!brevoResponse.ok) {
-      const errText = await brevoResponse.text().catch(() => '');
-      console.error('[Brevo API Error]', brevoResponse.status, errText);
+      console.error(`[Brevo API Error] Status ${brevoStatus}:`, brevoResponseBody);
 
       // Log failed attempt to Google Sheets before returning error
       if (sheetsWebhookUrl) {
-        logToSheets(sheetsWebhookUrl, trimmedEmail, false, emailSubject, `mailto:${trimmedEmail}`).catch(() => {});
+        await logToSheets(sheetsWebhookUrl, trimmedEmail, false, emailSubject, `mailto:${trimmedEmail}`);
       }
 
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to send email. Please try again later.',
+          error: `Email delivery failed (${brevoStatus}). Please check entered email.`,
         }),
         {
           status: 502,
@@ -186,9 +199,10 @@ ${myEmail}
       );
     }
 
-    emailSent = true;
+    console.log('[Brevo Success] Email accepted by Brevo API:', brevoResponseBody);
+    brevoSuccess = true;
 
-    // Fire lead notification and Sheets log in background (non-blocking)
+    // Fire lead notification to yourself in background
     fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -197,13 +211,13 @@ ${myEmail}
         'api-key': brevoApiKey,
       },
       body: JSON.stringify(leadNotificationPayload),
-    }).catch((e) => console.warn('Lead notification warn:', e));
+    }).catch((e) => console.warn('[Brevo Notification Error]', e));
 
-    // Log successful submission to Google Sheets
+    // Await Google Sheets logging to prevent Cloudflare Worker runtime cancellation
     if (sheetsWebhookUrl) {
-      logToSheets(sheetsWebhookUrl, trimmedEmail, true, emailSubject, `mailto:${trimmedEmail}`).catch((e) =>
-        console.warn('Sheets log warn:', e)
-      );
+      await logToSheets(sheetsWebhookUrl, trimmedEmail, true, emailSubject, `mailto:${trimmedEmail}`);
+    } else {
+      console.warn('[Sheets Log Warning] SHEETS_WEBHOOK_URL is not defined in Cloudflare environment variables.');
     }
 
     return new Response(
@@ -221,7 +235,7 @@ ${myEmail}
 
     // Log failed attempt to Google Sheets
     if (sheetsWebhookUrl) {
-      logToSheets(sheetsWebhookUrl, trimmedEmail, false, emailSubject, `mailto:${trimmedEmail}`).catch(() => {});
+      await logToSheets(sheetsWebhookUrl, trimmedEmail, false, emailSubject, `mailto:${trimmedEmail}`);
     }
 
     return new Response(
@@ -238,8 +252,8 @@ ${myEmail}
 };
 
 /**
- * Fires a non-blocking POST to the Google Apps Script webhook.
- * Logs: Timestamp | Email | Mail Sent | Mail Content (subject)
+ * Sends a GET request with URL query parameters to the Google Apps Script webhook.
+ * Awaited explicitly to ensure Cloudflare Workers runtime does not terminate early.
  */
 async function logToSheets(
   webhookUrl: string,
@@ -249,7 +263,7 @@ async function logToSheets(
   mailLink: string
 ): Promise<void> {
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-  
+
   const params = new URLSearchParams({
     timestamp,
     email,
@@ -258,12 +272,33 @@ async function logToSheets(
     mailLink,
   });
 
-  const targetUrl = webhookUrl.includes('?') 
-    ? `${webhookUrl}&${params.toString()}` 
-    : `${webhookUrl}?${params.toString()}`;
+  const cleanWebhookUrl = webhookUrl.trim();
+  const targetUrl = cleanWebhookUrl.includes('?')
+    ? `${cleanWebhookUrl}&${params.toString()}`
+    : `${cleanWebhookUrl}?${params.toString()}`;
 
-  await fetch(targetUrl, {
-    method: 'GET',
-    redirect: 'follow',
-  });
+  console.log(`[Sheets Logging] Sending GET request to Apps Script Webhook...`);
+  console.log(`[Sheets Logging] Target: ${cleanWebhookUrl.substring(0, 45)}...`);
+  console.log(`[Sheets Logging] Data: email="${email}", sent=${sent}`);
+
+  try {
+    const res = await fetch(targetUrl, {
+      method: 'GET',
+      redirect: 'follow',
+    });
+
+    const status = res.status;
+    const bodyText = await res.text().catch(() => '');
+
+    console.log(`[Sheets Logging Response] Status: ${status}`);
+    console.log(`[Sheets Logging Response] Body: ${bodyText.substring(0, 200)}`);
+
+    if (status >= 200 && status < 300) {
+      console.log('[Sheets Logging Success] Successfully logged lead to Google Sheets!');
+    } else {
+      console.error(`[Sheets Logging Failed] HTTP Status ${status}: ${bodyText}`);
+    }
+  } catch (err: any) {
+    console.error('[Sheets Logging Exception] Failed to send request to Google Apps Script:', err?.message || err);
+  }
 }
