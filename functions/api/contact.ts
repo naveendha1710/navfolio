@@ -249,15 +249,21 @@ async function logToSheets(
   mailLink: string
 ): Promise<void> {
   const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-  await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      timestamp,
-      email,
-      mailSent: sent ? 'Yes' : 'No',
-      mailContent: content,
-      mailLink,
-    }),
+  
+  const params = new URLSearchParams({
+    timestamp,
+    email,
+    mailSent: sent ? 'Yes' : 'No',
+    mailContent: content,
+    mailLink,
+  });
+
+  const targetUrl = webhookUrl.includes('?') 
+    ? `${webhookUrl}&${params.toString()}` 
+    : `${webhookUrl}?${params.toString()}`;
+
+  await fetch(targetUrl, {
+    method: 'GET',
+    redirect: 'follow',
   });
 }
