@@ -47,7 +47,7 @@ export const ConnectSection: React.FC<ConnectSectionProps> = ({
 
       if (response.ok && (data?.success || data?.status === 'success')) {
         setStatus('success');
-        setMessage(data?.message || 'Resume sent successfully! Check your inbox.');
+        setMessage(data?.message || 'Check your inbox.');
         setEmail('');
       } else {
         setStatus('error');
@@ -98,7 +98,7 @@ export const ConnectSection: React.FC<ConnectSectionProps> = ({
       {/* Feedback Messages */}
       {status === 'success' && (
         <div className="mt-4 text-center text-sm font-medium text-emerald-600 transition-opacity duration-300">
-          {message || 'Resume sent successfully! Check your inbox.'}
+          {message || 'Check your inbox.'}
         </div>
       )}
       {status === 'error' && (

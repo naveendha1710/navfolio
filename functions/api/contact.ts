@@ -192,7 +192,7 @@ ${myEmail}
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Resume sent successfully! Check your inbox.',
+        message: 'Check your inbox.',
       }),
       {
         status: 200,
