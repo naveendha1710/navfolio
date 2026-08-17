@@ -16,15 +16,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 export const onRequestOptions = async () => {
   return new Response(null, {
     status: 204,
@@ -35,30 +26,20 @@ export const onRequestOptions = async () => {
 export const onRequestPost = async (context: ContactEventContext) => {
   const { request, env } = context;
 
-  // Verify Content-Type & Payload
-  let name = '';
   let email = '';
-  let message = '';
-  let honeypot = '';
 
   try {
     const contentType = request.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const body = (await request.json().catch(() => ({}))) as Record<string, any>;
-      name = typeof body.name === 'string' ? body.name : '';
       email = typeof body.email === 'string' ? body.email : '';
-      message = typeof body.message === 'string' ? body.message : '';
-      honeypot = typeof body._gotcha === 'string' ? body._gotcha : '';
     } else {
       const formData = await request.formData().catch(() => new FormData());
-      name = formData.get('name')?.toString() || '';
       email = formData.get('email')?.toString() || '';
-      message = formData.get('message')?.toString() || '';
-      honeypot = formData.get('_gotcha')?.toString() || '';
     }
   } catch {
     return new Response(
-      JSON.stringify({ success: false, error: 'Invalid request format.' }),
+      JSON.stringify({ success: false, error: 'Invalid request payload.' }),
       {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -66,36 +47,12 @@ export const onRequestPost = async (context: ContactEventContext) => {
     );
   }
 
-  // Anti-spam Honeypot Check
-  if (honeypot.trim().length > 0) {
-    return new Response(
-      JSON.stringify({ success: true, message: 'Message processed.' }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-  }
-
-  // Server-Side Input Validation
-  const trimmedName = name.trim();
   const trimmedEmail = email.trim();
-  const trimmedMessage = message.trim();
-
-  if (!trimmedName) {
-    return new Response(
-      JSON.stringify({ success: false, error: 'Name is required.' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-  }
-
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
     return new Response(
-      JSON.stringify({ success: false, error: 'A valid email address is required.' }),
+      JSON.stringify({ success: false, error: 'Please enter a valid email address.' }),
       {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -103,38 +60,18 @@ export const onRequestPost = async (context: ContactEventContext) => {
     );
   }
 
-  if (!trimmedMessage) {
-    return new Response(
-      JSON.stringify({ success: false, error: 'Message is required.' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-  }
-
-  if (trimmedName.length > 200 || trimmedEmail.length > 320 || trimmedMessage.length > 5000) {
-    return new Response(
-      JSON.stringify({ success: false, error: 'Input exceeds maximum allowed length.' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-  }
-
-  // Verify Environment Variables (Secrets)
+  // Verify Environment Variables
   const brevoApiKey = env.BREVO_API_KEY;
-  const toEmail = env.CONTACT_TO_EMAIL;
-  const fromEmail = env.BREVO_FROM_EMAIL || toEmail;
-  const fromName = env.BREVO_FROM_NAME || 'Portfolio Contact Form';
+  const fromEmail = env.BREVO_FROM_EMAIL || env.CONTACT_TO_EMAIL || 'nav.cs@outlook.com';
+  const fromName = env.BREVO_FROM_NAME || 'Naveen Kumar S';
+  const myEmail = env.CONTACT_TO_EMAIL || 'nav.cs@outlook.com';
 
-  if (!brevoApiKey || !toEmail || !fromEmail) {
-    console.error('[Cloudflare Function Error] Missing Brevo environment variables (BREVO_API_KEY, CONTACT_TO_EMAIL, BREVO_FROM_EMAIL)');
+  if (!brevoApiKey) {
+    console.error('[Brevo Error] BREVO_API_KEY environment variable is missing.');
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Contact service is not properly configured on the server.',
+        error: 'Email service configuration error. Please contact site administrator.',
       }),
       {
         status: 500,
@@ -143,78 +80,96 @@ export const onRequestPost = async (context: ContactEventContext) => {
     );
   }
 
-  // Construct Brevo API Request Payload
-  const brevoPayload = {
+  // 1. Send Resume Email DIRECTLY TO THE VISITOR who entered their email
+  const visitorEmailPayload = {
     sender: {
       name: fromName,
       email: fromEmail,
     },
     to: [
       {
-        email: toEmail,
-        name: 'Portfolio Owner',
+        email: trimmedEmail,
       },
     ],
-    replyTo: {
-      email: trimmedEmail,
-      name: trimmedName,
-    },
-    subject: `New Portfolio Contact — ${trimmedName}`,
+    subject: 'Thanks for connecting! | Portfolio & Resume — Naveen',
     htmlContent: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;">
-          New Message from Portfolio Contact Form
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">
+          Hi there! 👋
         </h2>
-        
-        <div style="margin: 20px 0; background-color: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid #b15382;">
-          <p style="margin: 0 0 8px 0; font-size: 15px;"><strong>Sender Name:</strong> ${escapeHtml(trimmedName)}</p>
-          <p style="margin: 0; font-size: 15px;"><strong>Sender Email:</strong> <a href="mailto:${escapeHtml(trimmedEmail)}" style="color: #2563eb; text-decoration: underline;">${escapeHtml(trimmedEmail)}</a></p>
+        <p style="font-size: 15px; line-height: 1.6; color: #334155;">
+          Thanks for checking out my portfolio! As requested, you can access and download my latest resume below:
+        </p>
+        <div style="margin: 24px 0; text-align: center;">
+          <a href="https://navfolio.pages.dev/resume.pdf" target="_blank" style="background-color: #334155; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">
+            📄 View & Download Resume (PDF)
+          </a>
         </div>
-
-        <div style="margin-top: 24px;">
-          <h3 style="font-size: 15px; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Message:</h3>
-          <div style="white-space: pre-wrap; font-size: 15px; line-height: 1.6; color: #334155; background-color: #ffffff; padding: 16px; border: 1px solid #cbd5e1; border-radius: 8px;">${escapeHtml(trimmedMessage)}</div>
-        </div>
-
-        <hr style="margin-top: 32px; border: 0; border-top: 1px solid #e2e8f0;" />
-        <p style="font-size: 12px; color: #94a3b8; margin: 0; text-align: center;">
-          Sent via your Portfolio Contact Form. Click <strong>Reply</strong> in your email client to respond directly to ${escapeHtml(trimmedName)} (${escapeHtml(trimmedEmail)}).
+        <p style="font-size: 15px; line-height: 1.6; color: #334155;">
+          Feel free to reply directly to this email or connect with me regarding any development or AI/ML opportunities!
+        </p>
+        <br />
+        <p style="font-size: 14px; color: #475569; margin-bottom: 0;">
+          Best regards,<br />
+          <strong>Naveen Kumar S</strong><br />
+          <a href="mailto:${myEmail}" style="color: #2563eb;">${myEmail}</a>
         </p>
       </div>
     `,
     textContent: `
-New Message from Portfolio Contact Form
+Hi there!
 
-Sender Name: ${trimmedName}
-Sender Email: ${trimmedEmail}
+Thanks for checking out my portfolio! As requested, you can access and download my latest resume at:
+https://navfolio.pages.dev/resume.pdf
 
-Message:
-${trimmedMessage}
+Feel free to reply directly to this email or connect with me regarding any development or AI/ML opportunities!
 
----
-Sent via your Portfolio Contact Form. Reply directly to ${trimmedEmail}.
+Best regards,
+Naveen Kumar S
+${myEmail}
     `,
   };
 
-  // Dispatch Transactional Email via Brevo REST API
+  // 2. Also send notification to YOU so you know who entered their email
+  const leadNotificationPayload = {
+    sender: {
+      name: fromName,
+      email: fromEmail,
+    },
+    to: [
+      {
+        email: myEmail,
+      },
+    ],
+    subject: `🚀 New Lead Captured: ${trimmedEmail}`,
+    htmlContent: `
+      <div style="font-family: sans-serif; padding: 16px;">
+        <h3>New Visitor Lead Captured on Portfolio!</h3>
+        <p>Email: <strong>${trimmedEmail}</strong></p>
+        <p>A thank-you email with your resume link has been automatically dispatched to them.</p>
+      </div>
+    `,
+  };
+
   try {
-    const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+    // Send email to visitor
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
         'api-key': brevoApiKey,
       },
-      body: JSON.stringify(brevoPayload),
+      body: JSON.stringify(visitorEmailPayload),
     });
 
-    if (!brevoResponse.ok) {
-      const errorText = await brevoResponse.text().catch(() => '');
-      console.error('[Cloudflare Function Error] Brevo API status:', brevoResponse.status, errorText);
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      console.error('[Brevo API Error]', response.status, errText);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to send message via Brevo mail service. Please try again later.',
+          error: `Brevo API error (${response.status}): ${errText || 'Failed to send email.'}`,
         }),
         {
           status: 502,
@@ -223,10 +178,21 @@ Sent via your Portfolio Contact Form. Reply directly to ${trimmedEmail}.
       );
     }
 
+    // Fire lead notification to yourself in background
+    fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': brevoApiKey,
+      },
+      body: JSON.stringify(leadNotificationPayload),
+    }).catch((e) => console.warn('Lead notification warn:', e));
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Thank you! Your message has been sent successfully.',
+        message: 'Resume sent successfully! Check your inbox.',
       }),
       {
         status: 200,
@@ -238,7 +204,7 @@ Sent via your Portfolio Contact Form. Reply directly to ${trimmedEmail}.
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'An unexpected network error occurred. Please try again later.',
+        error: 'Network error. Failed to reach Brevo mail service.',
       }),
       {
         status: 500,
