@@ -80,7 +80,7 @@ export const onRequestPost = async (context: ContactEventContext) => {
     );
   }
 
-  // 1. Send Resume Email DIRECTLY TO THE VISITOR who entered their email
+  // 1. Send Thank You Email DIRECTLY TO THE VISITOR who entered their email
   const visitorEmailPayload = {
     sender: {
       name: fromName,
@@ -91,22 +91,28 @@ export const onRequestPost = async (context: ContactEventContext) => {
         email: trimmedEmail,
       },
     ],
-    subject: 'Thanks for connecting! | Portfolio & Resume — Naveen',
+    subject: "Thanks for connecting! | Naveen's Portfolio",
     htmlContent: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
         <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">
           Hi there! 👋
         </h2>
         <p style="font-size: 15px; line-height: 1.6; color: #334155;">
-          Thanks for checking out my portfolio! As requested, you can access and download my latest resume below:
+          Thanks for visiting my portfolio and reaching out! I have received your email and will get back to you personally within 24 hours.
         </p>
-        <div style="margin: 24px 0; text-align: center;">
-          <a href="https://navfolio.pages.dev/resume.pdf" target="_blank" style="background-color: #334155; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">
-            📄 View & Download Resume (PDF)
-          </a>
+        <p style="font-size: 15px; line-height: 1.6; color: #334155;">
+          In the meantime, feel free to explore my latest projects or connect with me online:
+        </p>
+        <div style="margin: 20px 0; background-color: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid #b15382;">
+          <p style="margin: 0 0 10px 0; font-size: 14px; color: #334155;">
+            💻 <strong>GitHub:</strong> <a href="https://github.com/naveendha1710" target="_blank" style="color: #2563eb; text-decoration: underline;">github.com/naveendha1710</a>
+          </p>
+          <p style="margin: 0; font-size: 14px; color: #334155;">
+            💼 <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/nav-cs/" target="_blank" style="color: #2563eb; text-decoration: underline;">linkedin.com/in/nav-cs</a>
+          </p>
         </div>
         <p style="font-size: 15px; line-height: 1.6; color: #334155;">
-          Feel free to reply directly to this email or connect with me regarding any development or AI/ML opportunities!
+          Feel free to reply directly to this email if you'd like to chat regarding any development or AI/ML opportunities!
         </p>
         <br />
         <p style="font-size: 14px; color: #475569; margin-bottom: 0;">
@@ -119,10 +125,11 @@ export const onRequestPost = async (context: ContactEventContext) => {
     textContent: `
 Hi there!
 
-Thanks for checking out my portfolio! As requested, you can access and download my latest resume at:
-https://navfolio.pages.dev/resume.pdf
+Thanks for visiting my portfolio and reaching out! I have received your email and will get back to you personally within 24 hours.
 
-Feel free to reply directly to this email or connect with me regarding any development or AI/ML opportunities!
+In the meantime, feel free to explore my latest projects or connect with me online:
+- GitHub: https://github.com/naveendha1710
+- LinkedIn: https://www.linkedin.com/in/nav-cs/
 
 Best regards,
 Naveen Kumar S
