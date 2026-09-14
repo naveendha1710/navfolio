@@ -31,6 +31,7 @@ const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
 const ConnectSection = lazy(() => import('./components/ConnectSection'))
+import CurvedInput from './components/ui/curved-input'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -504,14 +505,6 @@ export default function App() {
                     textToCopy="ray7905"
                     label="Discord: ray7905"
                     variant="double"
-                  />
-                </Suspense>
-
-                <Suspense fallback={<span>Mobile: +91 7092703991</span>}>
-                  <CopyableContactLink
-                    textToCopy="7092703991"
-                    label="Mobile: +91 7092703991"
-                    variant="pulse"
                   />
                 </Suspense>
               </div>
