@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useCallback } from "react"
 const useIsStaticRenderer = () => false
 import { motion, useAnimationFrame, useTransform } from "framer-motion"
 import type { MotionValue } from "framer-motion"
@@ -116,16 +116,67 @@ export default function VariableFontCursorProximity(props: Props) {
     const lastFrameRef = useRef(0)
     const mousePositionRef = useRef({ x: -99999, y: -99999 })
 
+        const isVisibleRef = useRef(false)
+    const cachedLetterCentersRef = useRef<Array<{ x: number; y: number }>>([])
+    const containerRectRef = useRef<{ left: number; top: number; width: number; height: number }>({ left: 0, top: 0, width: 0, height: 0 })
+
+    const updateCachedPositions = useCallback(() => {
+        const container = containerRef.current
+        if (!container) return
+        const containerRect = container.getBoundingClientRect()
+        containerRectRef.current = {
+            left: containerRect.left,
+            top: containerRect.top,
+            width: containerRect.width,
+            height: containerRect.height,
+        }
+
+        const centers: Array<{ x: number; y: number }> = []
+        for (let i = 0; i < letterRefs.current.length; i++) {
+            const letterEl = letterRefs.current[i]
+            if (!letterEl) {
+                centers.push({ x: 0, y: 0 })
+                continue
+            }
+            const rect = letterEl.getBoundingClientRect()
+            centers.push({
+                x: rect.left + rect.width / 2 - containerRect.left,
+                y: rect.top + rect.height / 2 - containerRect.top,
+            })
+        }
+        cachedLetterCentersRef.current = centers
+    }, [])
+
     useEffect(() => {
         if (isStatic) return
 
+        const container = containerRef.current
+        if (!container) return
+
+        // Measure on initial mount and layout shifts
+        updateCachedPositions()
+
+        const resizeObserver = new ResizeObserver(() => {
+            updateCachedPositions()
+        })
+        resizeObserver.observe(container)
+
+        const intersectionObserver = new IntersectionObserver(
+            ([entry]) => {
+                isVisibleRef.current = entry.isIntersecting
+                if (entry.isIntersecting) {
+                    updateCachedPositions()
+                }
+            },
+            { threshold: 0.05 }
+        )
+        intersectionObserver.observe(container)
+
         const updatePosition = (clientX: number, clientY: number) => {
-            const el = containerRef.current
-            if (!el) return
-            const rect = el.getBoundingClientRect()
+            const cRect = containerRectRef.current
             mousePositionRef.current = {
-                x: clientX - rect.left,
-                y: clientY - rect.top,
+                x: clientX - cRect.left,
+                y: clientY - cRect.top,
             }
         }
 
@@ -136,8 +187,8 @@ export default function VariableFontCursorProximity(props: Props) {
             updatePosition(ev.touches[0].clientX, ev.touches[0].clientY)
         }
 
-        window.addEventListener("mousemove", handleMouseMove)
-        window.addEventListener("touchmove", handleTouchMove)
+        window.addEventListener("mousemove", handleMouseMove, { passive: true })
+        window.addEventListener("touchmove", handleTouchMove, { passive: true })
 
         const handleDocumentClick = () => {
             letterFactorsRef.current = []
@@ -145,19 +196,21 @@ export default function VariableFontCursorProximity(props: Props) {
         document.addEventListener("click", handleDocumentClick)
 
         return () => {
+            resizeObserver.disconnect()
+            intersectionObserver.disconnect()
             window.removeEventListener("mousemove", handleMouseMove)
             window.removeEventListener("touchmove", handleTouchMove)
             document.removeEventListener("click", handleDocumentClick)
         }
-    }, [isStatic])
+    }, [isStatic, updateCachedPositions])
 
     const fromSettings = `'wght' ${fromWeight}`
 
     useAnimationFrame((now: number) => {
-        if (isStatic) return
-        const container = containerRef.current
-        if (!container) return
-        const containerRect = container.getBoundingClientRect()
+        if (isStatic || !isVisibleRef.current) return
+        const centers = cachedLetterCentersRef.current
+        if (!centers || centers.length === 0) return
+
         const mx = mousePositionRef.current.x
         const my = mousePositionRef.current.y
 
@@ -170,10 +223,9 @@ export default function VariableFontCursorProximity(props: Props) {
 
         for (let i = 0; i < letterRefs.current.length; i++) {
             const letterEl = letterRefs.current[i]
-            if (!letterEl) continue
-            const rect = letterEl.getBoundingClientRect()
-            const cx = rect.left + rect.width / 2 - containerRect.left
-            const cy = rect.top + rect.height / 2 - containerRect.top
+            if (!letterEl || !centers[i]) continue
+
+            const { x: cx, y: cy } = centers[i]
             const dx = mx - cx
             const dy = my - cy
             const dist = Math.sqrt(dx * dx + dy * dy)
