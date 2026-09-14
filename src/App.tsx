@@ -30,7 +30,7 @@ const FaqAccordion = lazy(() => import('./components/ui/faq-accordion'))
 const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
-const CurvedInput = lazy(() => import('./components/ui/curved-input'))
+const ConnectSection = lazy(() => import('./components/ConnectSection'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -510,7 +510,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* CurvedInput text box at bottom of page with matching UI */}
+          {/* Functional Lead Collection & Resume Emailer */}
           <div className="relative z-20 w-full flex justify-center pt-14 sm:pt-20">
             <div className="w-full max-w-lg min-h-[60px]">
               <Suspense fallback={<div className="w-full h-[60px]" />}>
@@ -538,6 +538,9 @@ export default function App() {
                 />
               </Suspense>
             </div>
+            <Suspense fallback={null}>
+              <ConnectSection />
+            </Suspense>
           </div>
         </section>
       </div>
