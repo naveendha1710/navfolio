@@ -31,7 +31,6 @@ const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
 const ConnectSection = lazy(() => import('./components/ConnectSection'))
-import CurvedInput from './components/ui/curved-input'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -513,33 +512,7 @@ export default function App() {
 
           {/* Functional Lead Collection & Resume Emailer */}
           <div className="relative z-20 w-full flex justify-center pt-14 sm:pt-20">
-            <div className="w-full max-w-lg min-h-[60px]">
-              <Suspense fallback={<div className="w-full h-[60px]" />}>
-                <CurvedInput
-                  theme="light"
-                  placeholder="Enter your email to connect..."
-                  buttonText="Get Started"
-                  backgroundColor="#ffffff"
-                  textColor="#1e293b"
-                  placeholderColor="#94a3b8"
-                  borderColor="#cbd5e1"
-                  buttonColor="#334155"
-                  buttonTextColor="#ffffff"
-                  iconColor="#334155"
-                  shadowSize="md"
-                  shadowColor="#64748b"
-                  bend={24}
-                  height={60}
-                  width="100%"
-                  onSubmit={(val) => {
-                    if (val) {
-                      window.location.href = `mailto:nav.cs@outlook.com?subject=Message%20from%20Portfolio&body=${encodeURIComponent(val)}`;
-                    }
-                  }}
-                />
-              </Suspense>
-            </div>
-            <Suspense fallback={null}>
+            <Suspense fallback={<div className="w-full max-w-lg min-h-[60px]" />}>
               <ConnectSection />
             </Suspense>
           </div>
