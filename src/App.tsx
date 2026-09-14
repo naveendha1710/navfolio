@@ -31,6 +31,7 @@ const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
 const ConnectSection = lazy(() => import('./components/ConnectSection'))
+import CurvedInput from './components/ui/curved-input'
 
 gsap.registerPlugin(ScrollTrigger)
 
