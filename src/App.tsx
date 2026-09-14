@@ -506,14 +506,6 @@ export default function App() {
                     variant="double"
                   />
                 </Suspense>
-
-                <Suspense fallback={<span>Mobile: +91 7092703991</span>}>
-                  <CopyableContactLink
-                    textToCopy="7092703991"
-                    label="Mobile: +91 7092703991"
-                    variant="pulse"
-                  />
-                </Suspense>
               </div>
             </div>
           </div>
