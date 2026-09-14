@@ -52,16 +52,10 @@ export default function TextType({
   lcpHint = false,
   ...props
 }: TextTypeProps) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(!startOnVisible);
-  // Track whether the typewriter has completed its first sentence (used to
-  // remove the LCP hint span once the animation has fully rendered the text).
-  const [lcpHintDone, setLcpHintDone] = useState(false);
   const cursorRef = useRef<HTMLSpanElement | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
+  const textSpanRef = useRef<HTMLSpanElement | null>(null);
   const sentenceCompletedFiredRef = useRef<boolean>(false);
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
@@ -71,11 +65,6 @@ export default function TextType({
     const { min, max } = variableSpeed;
     return Math.random() * (max - min) + min;
   }, [variableSpeed, typingSpeed]);
-
-  const getCurrentTextColor = () => {
-    if (textColors.length === 0) return 'inherit';
-    return textColors[currentTextIndex % textColors.length];
-  };
 
   useEffect(() => {
     if (!startOnVisible || !containerRef.current) return;
@@ -111,89 +100,105 @@ export default function TextType({
     }
   }, [showCursor, cursorBlinkDuration]);
 
+  // Imperative typing engine: drives text reveal via textSpanRef.current.textContent
+  // This avoids per-character React state updates and full component re-render loops.
   useEffect(() => {
     if (!isVisible) return;
 
     let timeout: ReturnType<typeof setTimeout>;
-
-    const currentText = textArray[currentTextIndex];
-    const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
+    let currentTextIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    let displayedText = '';
 
     const executeTypingAnimation = () => {
+      const currentText = textArray[currentTextIndex];
+      const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
+
+      const updateCursorVisibility = (hiding: boolean) => {
+        if (cursorRef.current && hideCursorWhileTyping) {
+          cursorRef.current.style.display = hiding ? 'none' : 'inline-block';
+        }
+      };
+
+      const setSpanText = (str: string) => {
+        displayedText = str;
+        if (textSpanRef.current) {
+          textSpanRef.current.textContent = str;
+          if (textColors.length > 0) {
+            textSpanRef.current.style.color = textColors[currentTextIndex % textColors.length];
+          }
+        }
+      };
+
       if (isDeleting) {
         if (displayedText === '') {
-          setIsDeleting(false);
+          isDeleting = false;
           sentenceCompletedFiredRef.current = false;
           if (currentTextIndex === textArray.length - 1 && !loop) {
+            updateCursorVisibility(false);
             return;
           }
 
-          setCurrentTextIndex(prev => (prev + 1) % textArray.length);
-          setCurrentCharIndex(0);
-          timeout = setTimeout(() => {}, pauseDuration);
+          currentTextIndex = (currentTextIndex + 1) % textArray.length;
+          currentCharIndex = 0;
+          timeout = setTimeout(executeTypingAnimation, pauseDuration);
         } else {
+          updateCursorVisibility(true);
           timeout = setTimeout(() => {
-            setDisplayedText(prev => prev.slice(0, -1));
+            setSpanText(displayedText.slice(0, -1));
+            executeTypingAnimation();
           }, deletingSpeed);
         }
       } else {
         if (currentCharIndex < processedText.length) {
+          updateCursorVisibility(true);
           timeout = setTimeout(
             () => {
-              setDisplayedText(prev => prev + processedText[currentCharIndex]);
-              setCurrentCharIndex(prev => prev + 1);
+              setSpanText(displayedText + processedText[currentCharIndex]);
+              currentCharIndex++;
+              executeTypingAnimation();
             },
             variableSpeed ? getRandomSpeed() : typingSpeed
           );
         } else if (textArray.length >= 1) {
+          updateCursorVisibility(false);
           if (onSentenceComplete && !sentenceCompletedFiredRef.current) {
             sentenceCompletedFiredRef.current = true;
             onSentenceComplete(textArray[currentTextIndex], currentTextIndex);
-          }
-          // First sentence done — we can drop the LCP hint span
-          if (lcpHint && !lcpHintDone) {
-            setLcpHintDone(true);
           }
 
           if (!loop && currentTextIndex === textArray.length - 1) return;
 
           timeout = setTimeout(() => {
-            setIsDeleting(true);
+            isDeleting = true;
+            executeTypingAnimation();
           }, pauseDuration);
         }
       }
     };
 
-    if (currentCharIndex === 0 && !isDeleting && displayedText === '') {
-      timeout = setTimeout(executeTypingAnimation, initialDelay);
-    } else {
-      executeTypingAnimation();
-    }
+    timeout = setTimeout(executeTypingAnimation, initialDelay);
 
     return () => clearTimeout(timeout);
   }, [
-    currentCharIndex,
-    displayedText,
-    isDeleting,
-    typingSpeed,
-    deletingSpeed,
-    pauseDuration,
+    isVisible,
     textArray,
-    currentTextIndex,
     loop,
     initialDelay,
-    isVisible,
+    pauseDuration,
+    typingSpeed,
+    deletingSpeed,
     reverseMode,
     variableSpeed,
+    textColors,
+    hideCursorWhileTyping,
     onSentenceComplete,
     getRandomSpeed
   ]);
 
-  const shouldHideCursor =
-    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
-
-  // The first text is what the LCP hint should mirror.
   const firstText = Array.isArray(text) ? text[0] : text;
+  const initialColor = textColors.length > 0 ? textColors[0] : 'inherit';
 
   return createElement(
     Component,
@@ -202,34 +207,32 @@ export default function TextType({
       className: `inline-block whitespace-pre-wrap tracking-tight ${className}`,
       ...props
     },
-    // ── LCP hint ─────────────────────────────────────────────────────────────
-    // Rendered on first paint so the browser has an LCP-eligible text node.
-    // Visually invisible (opacity:0) and removed from the a11y tree (aria-hidden).
-    // Positioned absolute so it takes zero layout space and causes no CLS.
-    // Removed from DOM once the typewriter has completed the first sentence.
-    lcpHint && !lcpHintDone && (
-      <span
-        key="lcp-hint"
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          opacity: 0,
-          pointerEvents: 'none',
-          userSelect: 'none',
-          whiteSpace: 'pre'
-        }}
-      >
-        {firstText}
-      </span>
-    ),
-    // ── Animated typewriter text ──────────────────────────────────────────────
-    <span className="inline" style={{ color: getCurrentTextColor() || 'inherit' }}>
-      {displayedText}
+    // ── LCP text node ────────────────────────────────────────────────────────
+    // Rendered on first paint so the browser discovers the full LCP text immediately.
+    // Zero layout shift, accessible to screen readers, immediately visible to crawler.
+    <span
+      key="lcp-text"
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        opacity: 0,
+        pointerEvents: 'none',
+        userSelect: 'none',
+        whiteSpace: 'pre'
+      }}
+    >
+      {firstText}
     </span>,
+    // ── Animated typewriter text span ─────────────────────────────────────────
+    <span
+      ref={textSpanRef}
+      className="inline"
+      style={{ color: initialColor }}
+    />,
     showCursor && (
       <span
         ref={cursorRef}
-        className={`ml-1 inline-block opacity-100 ${shouldHideCursor ? 'hidden' : ''} ${cursorClassName}`}
+        className={`ml-1 inline-block opacity-100 ${cursorClassName}`}
       >
         {cursorCharacter}
       </span>

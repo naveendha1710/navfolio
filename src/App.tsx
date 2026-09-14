@@ -441,8 +441,8 @@ export default function App() {
           {/* Main Grid Container: Left = FAQ Accordion, Right = Contact Links */}
           <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-16">
             {/* Left Aligned FAQ Accordion containing Background & Credentials details */}
-            <div className="w-full lg:max-w-2xl">
-              <Suspense fallback={null}>
+            <div className="w-full lg:max-w-2xl min-h-[480px]">
+              <Suspense fallback={<div className="w-full min-h-[480px]" />}>
                 <FaqAccordion />
               </Suspense>
             </div>
@@ -520,8 +520,8 @@ export default function App() {
 
           {/* CurvedInput text box at bottom of page with matching UI */}
           <div className="relative z-20 w-full flex justify-center pt-14 sm:pt-20">
-            <div className="w-full max-w-lg">
-              <Suspense fallback={null}>
+            <div className="w-full max-w-lg min-h-[60px]">
+              <Suspense fallback={<div className="w-full h-[60px]" />}>
                 <CurvedInput
                   theme="light"
                   placeholder="Enter your email to connect..."
