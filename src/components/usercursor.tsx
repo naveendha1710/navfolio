@@ -169,10 +169,19 @@ export default function UserCursor(props: Props) {
         const container = containerRef.current
         if (!fullScreen && !container) return
 
+        let cachedRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 }
+        const updateRect = () => {
+            if (container) cachedRect = container.getBoundingClientRect()
+        }
+
+        const ro = container ? new ResizeObserver(updateRect) : null
+        if (ro && container) ro.observe(container)
+        window.addEventListener("scroll", updateRect, { passive: true })
+        window.addEventListener("resize", updateRect, { passive: true })
+
         const getLocal = (clientX: number, clientY: number) => {
             if (fullScreen) return { x: clientX, y: clientY }
-            const rect = container!.getBoundingClientRect()
-            return { x: clientX - rect.left, y: clientY - rect.top }
+            return { x: clientX - cachedRect.left, y: clientY - cachedRect.top }
         }
 
         const onMove = (e: MouseEvent) => {
@@ -228,6 +237,9 @@ export default function UserCursor(props: Props) {
         }
 
         return () => {
+            if (ro) ro.disconnect()
+            window.removeEventListener("scroll", updateRect)
+            window.removeEventListener("resize", updateRect)
             if (fullScreen) {
                 window.removeEventListener("mousemove", onMove)
                 window.removeEventListener("mousedown", onDown)

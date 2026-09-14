@@ -139,6 +139,7 @@ export default function ScrollExpand({
     let current = 0;
     let target = 0;
     let stageH = 0;
+    let trackTopOffset = 0;
     let running = false;
 
     const measure = () => {
@@ -150,6 +151,10 @@ export default function ScrollExpand({
 
       const w = root.clientWidth || stageH;
       stage.style.setProperty('--se-title-size', `${clamp(w * 0.075, 20, 84)}px`);
+
+      if (c.useWindowScroll) {
+        trackTopOffset = track.getBoundingClientRect().top + window.scrollY;
+      }
     };
 
     const readProgress = () => {
@@ -157,7 +162,7 @@ export default function ScrollExpand({
       if (!c.enabled) return 1;
       const span = stageH * Math.max(0.01, c.scrollDistance);
       if (c.useWindowScroll) {
-        const top = track.getBoundingClientRect().top;
+        const top = trackTopOffset - window.scrollY;
         return clamp(-top / span, 0, 2);
       }
       return clamp(root.scrollTop / span, 0, 2);

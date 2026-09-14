@@ -441,8 +441,8 @@ export default function App() {
           {/* Main Grid Container: Left = FAQ Accordion, Right = Contact Links */}
           <div className="relative z-20 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-12 lg:gap-16">
             {/* Left Aligned FAQ Accordion containing Background & Credentials details */}
-            <div className="w-full lg:max-w-2xl">
-              <Suspense fallback={null}>
+            <div className="w-full lg:max-w-2xl min-h-[480px]">
+              <Suspense fallback={<div className="w-full min-h-[480px]" />}>
                 <FaqAccordion />
               </Suspense>
             </div>
@@ -520,6 +520,32 @@ export default function App() {
 
           {/* Functional Lead Collection & Resume Emailer */}
           <div className="relative z-20 w-full flex justify-center pt-14 sm:pt-20">
+            <div className="w-full max-w-lg min-h-[60px]">
+              <Suspense fallback={<div className="w-full h-[60px]" />}>
+                <CurvedInput
+                  theme="light"
+                  placeholder="Enter your email to connect..."
+                  buttonText="Get Started"
+                  backgroundColor="#ffffff"
+                  textColor="#1e293b"
+                  placeholderColor="#94a3b8"
+                  borderColor="#cbd5e1"
+                  buttonColor="#334155"
+                  buttonTextColor="#ffffff"
+                  iconColor="#334155"
+                  shadowSize="md"
+                  shadowColor="#64748b"
+                  bend={24}
+                  height={60}
+                  width="100%"
+                  onSubmit={(val) => {
+                    if (val) {
+                      window.location.href = `mailto:nav.cs@outlook.com?subject=Message%20from%20Portfolio&body=${encodeURIComponent(val)}`;
+                    }
+                  }}
+                />
+              </Suspense>
+            </div>
             <Suspense fallback={null}>
               <ConnectSection />
             </Suspense>

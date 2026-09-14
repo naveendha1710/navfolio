@@ -11,6 +11,13 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    {
+      name: 'filter-vendor-three-preload',
+      transformIndexHtml(html) {
+        // Prevent eager preloading of 3.05MB Three.js bundle on initial page load
+        return html.replace(/<link\s+rel="modulepreload"[^>]*vendor-three[^>]*>\s*/gi, '');
+      },
+    },
   ],
   resolve: {
     alias: {
