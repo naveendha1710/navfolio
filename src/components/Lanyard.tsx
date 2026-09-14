@@ -7,7 +7,6 @@ import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
 
 import idCardImg from '../assets/id_card/id_card_web.png';
-import mcBookImg from '../assets/lanyard_img/MC_book.png';
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 
