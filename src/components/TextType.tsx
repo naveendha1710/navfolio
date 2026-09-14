@@ -30,6 +30,8 @@ export interface TextTypeProps extends React.HTMLAttributes<HTMLElement> {
   lcpHint?: boolean;
 }
 
+const DEFAULT_TEXT_COLORS: string[] = [];
+
 export default function TextType({
   text,
   as: Component = 'div',
@@ -44,7 +46,7 @@ export default function TextType({
   cursorCharacter = '|',
   cursorClassName = '',
   cursorBlinkDuration = 0.5,
-  textColors = [],
+  textColors = DEFAULT_TEXT_COLORS,
   variableSpeed,
   onSentenceComplete,
   startOnVisible = false,
@@ -57,14 +59,30 @@ export default function TextType({
   const containerRef = useRef<HTMLElement | null>(null);
   const textSpanRef = useRef<HTMLSpanElement | null>(null);
   const sentenceCompletedFiredRef = useRef<boolean>(false);
+  const hasCompletedRef = useRef<boolean>(false);
 
-  const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
+  // Keep latest onSentenceComplete in a ref so changes do not restart the typing effect
+  const onSentenceCompleteRef = useRef(onSentenceComplete);
+  useEffect(() => {
+    onSentenceCompleteRef.current = onSentenceComplete;
+  }, [onSentenceComplete]);
 
+  const textSerialized = Array.isArray(text) ? text.join('\u0000') : text;
+  const prevTextRef = useRef(textSerialized);
+  if (prevTextRef.current !== textSerialized) {
+    prevTextRef.current = textSerialized;
+    hasCompletedRef.current = false;
+    sentenceCompletedFiredRef.current = false;
+  }
+
+  const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [textSerialized]);
+
+  const variableSpeedMin = variableSpeed?.min;
+  const variableSpeedMax = variableSpeed?.max;
   const getRandomSpeed = useCallback(() => {
-    if (!variableSpeed) return typingSpeed;
-    const { min, max } = variableSpeed;
-    return Math.random() * (max - min) + min;
-  }, [variableSpeed, typingSpeed]);
+    if (variableSpeedMin === undefined || variableSpeedMax === undefined) return typingSpeed;
+    return Math.random() * (variableSpeedMax - variableSpeedMin) + variableSpeedMin;
+  }, [variableSpeedMin, variableSpeedMax, typingSpeed]);
 
   useEffect(() => {
     if (!startOnVisible || !containerRef.current) return;
@@ -105,6 +123,24 @@ export default function TextType({
   useEffect(() => {
     if (!isVisible) return;
 
+    const lastIndex = textArray.length - 1;
+    const lastText = textArray[lastIndex] || '';
+    const lastProcessedText = reverseMode ? lastText.split('').reverse().join('') : lastText;
+
+    // If sentence already completed and loop is disabled, preserve final text and do not re-run
+    if (!loop && hasCompletedRef.current) {
+      if (textSpanRef.current && textSpanRef.current.textContent !== lastProcessedText) {
+        textSpanRef.current.textContent = lastProcessedText;
+        if (textColors.length > 0) {
+          textSpanRef.current.style.color = textColors[lastIndex % textColors.length];
+        }
+      }
+      if (cursorRef.current && hideCursorWhileTyping) {
+        cursorRef.current.style.display = 'inline-block';
+      }
+      return;
+    }
+
     let timeout: ReturnType<typeof setTimeout>;
     let currentTextIndex = 0;
     let currentCharIndex = 0;
@@ -137,6 +173,7 @@ export default function TextType({
           sentenceCompletedFiredRef.current = false;
           if (currentTextIndex === textArray.length - 1 && !loop) {
             updateCursorVisibility(false);
+            hasCompletedRef.current = true;
             return;
           }
 
@@ -163,12 +200,15 @@ export default function TextType({
           );
         } else if (textArray.length >= 1) {
           updateCursorVisibility(false);
-          if (onSentenceComplete && !sentenceCompletedFiredRef.current) {
+          if (onSentenceCompleteRef.current && !sentenceCompletedFiredRef.current) {
             sentenceCompletedFiredRef.current = true;
-            onSentenceComplete(textArray[currentTextIndex], currentTextIndex);
+            onSentenceCompleteRef.current(textArray[currentTextIndex], currentTextIndex);
           }
 
-          if (!loop && currentTextIndex === textArray.length - 1) return;
+          if (!loop && currentTextIndex === textArray.length - 1) {
+            hasCompletedRef.current = true;
+            return;
+          }
 
           timeout = setTimeout(() => {
             isDeleting = true;
@@ -193,7 +233,6 @@ export default function TextType({
     variableSpeed,
     textColors,
     hideCursorWhileTyping,
-    onSentenceComplete,
     getRandomSpeed
   ]);
 
