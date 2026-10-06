@@ -31,6 +31,7 @@ const LineHoverLink = lazy(() => import('./components/ui/line-hover-link'))
 const SquigglyText = lazy(() => import('./components/ui/squiggly-text'))
 const MobileDesktopNotice = lazy(() => import('./components/ui/mobile-desktop-notice'))
 const ConnectSection = lazy(() => import('./components/ConnectSection'))
+import { profile, sampleBookPages } from './data/profile'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -40,64 +41,6 @@ gsap.registerPlugin(ScrollTrigger)
 const FAULTY_GRID_MUL: [number, number] = [2, 1]
 const LANYARD_POSITION: [number, number, number] = [0, 0, 20]
 const LANYARD_GRAVITY: [number, number, number] = [0, -40, 0]
-
-// Stable book pages defined OUTSIDE the component to avoid recreation on every render
-const sampleBookPages = [
-  {
-    pageNumber: 1,
-    title: "The Spark",
-    content: (
-      <div className="space-y-3 pt-1 text-neutral-800 font-serif leading-relaxed text-xs sm:text-sm select-none">
-        <p>
-          It all started when he was a pretty lazy 13-year-old. He was handed an old, rundown laptop that he ignored for days.
-        </p>
-        <p>
-          One afternoon, purely out of boredom, he finally booted it up and found a copy of <i>Far Cry 3</i>. He played through the whole game and was totally hooked. Excited, he tried to install a bunch of other games, but they kept crashing or simply wouldn't run.
-        </p>
-      </div>
-    ),
-    backContent: (
-      <div className="space-y-3 pt-1 text-neutral-800 font-serif leading-relaxed text-xs sm:text-sm select-none">
-        <h3 className="text-lg font-medium text-center mb-4 text-neutral-900 tracking-tight font-serif">
-          The Bottleneck
-        </h3>
-        <p>
-          He wanted to know why, which led him down a massive rabbit hole. He quickly realized his hardware was the bottleneck.
-        </p>
-        <p>
-          Instead of giving up, he started tweaking everything he could. He figured out how to allocate virtual RAM just to keep heavier programs running. When the laptop started overheating from the strain, he grabbed a screwdriver, opened it up, and learned how to apply fresh thermal paste to the CPU.
-        </p>
-      </div>
-    )
-  },
-  {
-    pageNumber: 2,
-    title: "Under the Hood",
-    content: (
-      <div className="space-y-3 pt-1 text-neutral-800 font-serif leading-relaxed text-xs sm:text-sm select-none">
-        <p>
-          That old laptop became his testing ground. He dug deeply into the OS registry to optimize performance, explored cloud computing to bypass his local limits, and picked up basic coding to script his own improvements.
-        </p>
-        <p>
-          Before long, he wasn't just playing games; he was actively involved in tech communities, obsessed with PC building, hardware specs, and squeezing out every drop of performance.
-        </p>
-      </div>
-    ),
-    backContent: (
-      <div className="space-y-3 pt-1 text-neutral-800 font-serif leading-relaxed text-xs sm:text-sm select-none">
-        <h3 className="text-lg font-medium text-center mb-4 text-neutral-900 tracking-tight font-serif">
-          The Next Level
-        </h3>
-        <p>
-          Then, one day, he was reading about Artificial Intelligence. What caught his attention wasn't just the smart software—it was how incredibly hardware-hungry it was.
-        </p>
-        <p>
-          Training neural networks requires massive compute power and optimized architecture. He had spent... figuring out how to push a weak laptop to its absolute limits, so naturally... Curious... he opened a new tab... ready to see exactly how it worked!.
-        </p>
-      </div>
-    )
-  }
-]
 
 // Stable UserCursor style object to avoid re-renders from inline object creation
 const userCursorStyle: React.CSSProperties = {
@@ -361,7 +304,7 @@ export default function App() {
         <section ref={section3Ref} className="relative z-30 w-full min-h-screen bg-transparent overflow-hidden">
           <Suspense fallback={null}>
             <UserCursor
-              name="Naveen"
+              name={profile.personalInfo.shortName}
               color="#b15382"
               textColor="#fafaf9"
               size={24}
@@ -388,7 +331,7 @@ export default function App() {
                   <Suspense fallback={null}>
                     <InteractiveBook
                       coverImage={mcBookImg}
-                      bookAuthor="Naveen Kumar S"
+                      bookAuthor={profile.personalInfo.name}
                       width={330}
                       height={473}
                       pages={sampleBookPages}
@@ -453,56 +396,56 @@ export default function App() {
                 Connect & Contact
               </h2>
               <div className="flex flex-col items-start lg:items-end gap-5 text-slate-900 font-mono text-base sm:text-lg">
-                <Suspense fallback={<span>LinkedIn / nav-cs</span>}>
+                <Suspense fallback={<span>{profile.socialLinks.linkedin.label}</span>}>
                   <LineHoverLink
-                    href="https://www.linkedin.com/in/nav-cs/"
+                    href={profile.socialLinks.linkedin.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="scribble"
                     className="text-slate-950 font-bold"
                   >
-                    LinkedIn / nav-cs
+                    {profile.socialLinks.linkedin.label}
                   </LineHoverLink>
                 </Suspense>
 
-                <Suspense fallback={<span>GitHub / naveendha1710</span>}>
+                <Suspense fallback={<span>{profile.socialLinks.github.label}</span>}>
                   <LineHoverLink
-                    href="https://github.com/naveendha1710"
+                    href={profile.socialLinks.github.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="strike"
                     className="text-slate-950 font-bold"
                   >
-                    GitHub / naveendha1710
+                    {profile.socialLinks.github.label}
                   </LineHoverLink>
                 </Suspense>
 
-                <Suspense fallback={<span>nav.cs@outlook.com</span>}>
+                <Suspense fallback={<span>{profile.personalInfo.email}</span>}>
                   <LineHoverLink
-                    href="mailto:nav.cs@outlook.com"
+                    href={`mailto:${profile.personalInfo.email}`}
                     variant="slide"
                     className="text-slate-950 font-medium"
                   >
-                    nav.cs@outlook.com
+                    {profile.personalInfo.email}
                   </LineHoverLink>
                 </Suspense>
 
-                <Suspense fallback={<span>Instagram / @_nav_en._</span>}>
+                <Suspense fallback={<span>{profile.socialLinks.instagram.label}</span>}>
                   <LineHoverLink
-                    href="https://www.instagram.com/_nav_en._/?utm_source=ig_web_button_share_sheet"
+                    href={profile.socialLinks.instagram.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="grow"
                     className="text-slate-950 font-medium"
                   >
-                    Instagram / @_nav_en._
+                    {profile.socialLinks.instagram.label}
                   </LineHoverLink>
                 </Suspense>
 
-                <Suspense fallback={<span>Discord: ray7905</span>}>
+                <Suspense fallback={<span>{profile.socialLinks.discord.label}</span>}>
                   <CopyableContactLink
-                    textToCopy="ray7905"
-                    label="Discord: ray7905"
+                    textToCopy={profile.socialLinks.discord.username}
+                    label={profile.socialLinks.discord.label}
                     variant="double"
                   />
                 </Suspense>

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { profile } from "@/data/profile"
 const useIsStaticRenderer = () => false
 import {
     motion,
@@ -533,7 +534,7 @@ const COMPONENT_DEFAULTS = {
     offsetX: 0,
     offsetY: 0,
     showLabel: true,
-    name: "Naveen",
+    name: profile.personalInfo.shortName,
     textColor: "#ffffff",
     labelTiltStrength: 25,
     labelOffsetUseDefault: true,

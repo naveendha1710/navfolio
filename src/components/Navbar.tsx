@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react'
 import { PopButton } from './ui/pop-button'
-
+import { profile } from '@/data/profile'
 
 const Navbar = memo(function Navbar() {
   const handleProjectsClick = useCallback(() => {
@@ -12,8 +12,8 @@ const Navbar = memo(function Navbar() {
 
   const handleResumeClick = useCallback(() => {
     const link = document.createElement('a')
-    link.href = '/resume.pdf'
-    link.download = 'Resume - nav.cs@outlook.com.pdf'
+    link.href = profile.personalInfo.resumeUrl || '/resume.pdf'
+    link.download = profile.personalInfo.resumeDownloadName || 'Resume.pdf'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

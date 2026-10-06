@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from openpyxl import load_workbook, Workbook
 from email.message import EmailMessage
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 import smtplib
 import os
 
@@ -18,18 +18,18 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
-        "http://192.168.1.7:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-OUTLOOK_EMAIL = "nav.cs@outlook.com"
-OUTLOOK_APP_PASSWORD = os.getenv("OUTLOOK_APP_PASSWORD", "YOUR_16_CHAR_MICROSOFT_APP_PASSWORD")
+OUTLOOK_EMAIL = os.getenv("OUTLOOK_EMAIL", "your_email@example.com")
+OUTLOOK_APP_PASSWORD = os.getenv("OUTLOOK_APP_PASSWORD", "")
+OWNER_NAME = os.getenv("PORTFOLIO_OWNER_NAME", "Portfolio Owner")
 
-EXCEL_FILE = os.path.join(os.path.dirname(__file__), "portfolio_leads.xlsx")
-RESUME_PATH = os.path.join(os.path.dirname(__file__), "Resume.pdf")
+EXCEL_FILE = os.getenv("LEADS_EXCEL_FILE", os.path.join(os.path.dirname(__file__), "leads.xlsx"))
+RESUME_PATH = os.getenv("RESUME_PDF_PATH", os.path.join(os.path.dirname(__file__), "Resume.pdf"))
 
 class ContactPayload(BaseModel):
     name: str = ""
@@ -52,20 +52,24 @@ def append_to_excel(user_name: str, user_email: str, user_message: str):
 
 def send_resume_email(recipient_email: str, recipient_name: str = ""):
     """Sends resume email using Outlook SMTP."""
+    if not OUTLOOK_APP_PASSWORD or OUTLOOK_EMAIL == "your_email@example.com":
+        print("[Info] OUTLOOK_APP_PASSWORD not set. Skipping SMTP delivery.")
+        return
+
     msg = EmailMessage()
-    msg['Subject'] = "Thanks for connecting! | My Portfolio & Resume"
-    msg['From'] = f"Nav <{OUTLOOK_EMAIL}>"
+    msg['Subject'] = f"Thanks for connecting! | {OWNER_NAME}'s Portfolio & Resume"
+    msg['From'] = f"{OWNER_NAME} <{OUTLOOK_EMAIL}>"
     msg['To'] = recipient_email
-    
+
     greeting = f"Hi {recipient_name}," if recipient_name else "Hi there,"
     body = f"""{greeting}
 
 Thanks for checking out my portfolio! As requested, I have attached my resume to this email. 
 
-Let me know if you have any questions or would like to schedule a quick chat regarding any development opportunities.
+Let me know if you have any questions or would like to schedule a quick chat regarding any opportunities.
 
 Best regards,
-Nav"""
+{OWNER_NAME}"""
     msg.set_content(body)
 
     if os.path.exists(RESUME_PATH):
@@ -74,7 +78,7 @@ Nav"""
                 f.read(),
                 maintype='application',
                 subtype='pdf',
-                filename="Nav_Resume.pdf"
+                filename=os.path.basename(RESUME_PATH)
             )
 
     with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
@@ -89,7 +93,6 @@ def read_root():
 @app.post("/api/contact")
 async def handle_contact(request: Request):
     try:
-        # Support both JSON and Form payloads
         content_type = request.headers.get("content-type", "")
         if "application/json" in content_type:
             data = await request.json()
