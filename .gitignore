@@ -6,23 +6,43 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build Outputs
 node_modules
 dist
 dist-ssr
 *.local
 
-# Python & Backend
-__pycache__/
-*.pyc
-*.xlsx
-.dev.vars
+# Environment variables & local configurations
+.env
+.env.*
+!.env.example
 .dev.env
+.dev.vars
 
-# Editor directories and files
+# Local personal profile data (use profile.example.tsx as template)
+src/data/profile.tsx
+
+# Lead data & private spreadsheets
+*.xlsx
+backend/portfolio_leads.xlsx
+
+# Private resumes & personal documents
+public/resume.pdf
+public/Resume.pdf
+!public/resume.example.pdf
+backend/Resume.pdf
+src/assets/resume_pdf/
+
+# Python & Backend build artifacts
+__pycache__/
+*.py[cod]
+
+# Editor and OS files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj

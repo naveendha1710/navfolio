@@ -184,17 +184,10 @@ export default function TargetCursor({
 
     const scrollHandler = () => {
       if (!activeTarget || !cursorRef.current || !isFirstPageRef.current) return;
-      const { x: offsetX, y: offsetY } = getOffset();
-      const mouseX = (gsap.getProperty(cursorRef.current, 'x') as number) + offsetX;
-      const mouseY = (gsap.getProperty(cursorRef.current, 'y') as number) + offsetY;
-      const elementUnderMouse = document.elementFromPoint(mouseX, mouseY);
-      const isStillOverTarget =
-        elementUnderMouse &&
-        (elementUnderMouse === activeTarget || elementUnderMouse.closest(targetSelector) === activeTarget);
-      if (!isStillOverTarget) {
-        if (currentLeaveHandler) {
-          currentLeaveHandler();
-        }
+      // When scrolling occurs, if mouse leaves target due to page movement,
+      // trigger clean exit without expensive synchronous document.elementFromPoint() layout hit-test.
+      if (currentLeaveHandler) {
+        currentLeaveHandler();
       }
     };
     window.addEventListener('scroll', scrollHandler, { passive: true });

@@ -2,9 +2,7 @@ import React, { memo } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { ExternalLink, Layers, Cpu, Server } from 'lucide-react';
 import { CreepyButton } from './ui/creepy-button';
-import project1Img from '../assets/projects_image/project_1.webp';
-import project2Img from '../assets/projects_image/project_2.webp';
-import project3Img from '../assets/projects_image/project_3.webp';
+import { projectsData, ProjectItem, profile } from '@/data/profile';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -34,66 +32,7 @@ const letterVariant: Variants = {
     transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } }
 };
 
-interface Project {
-  id: string;
-  numberLabel: string;
-  title: string;
-  subtitle: string;
-  techStack: string[];
-  bullets: string[];
-  placeholderBg: string;
-  placeholderTextColor?: string;
-  iconBg?: string;
-  imageSrc?: string;
-  githubUrl?: string;
-}
-
-const projectsData: Project[] = [
-  {
-    id: "project-1",
-    numberLabel: "Project 1",
-    title: "ERP System",
-    subtitle: "Full Stack with AI",
-    techStack: ["React.js", "Node.js", "TypeScript", "PostgreSQL", "Supabase", "MCP"],
-    bullets: [
-      "Built a production-grade ERP handling Tenant, Asset management, Helpdesk and 50,000+ tracked assets",
-      "Implemented agentic AI workflows for automated task routing and management across institutional departments"
-    ],
-    placeholderBg: "bg-[#f3efea]", // Warm cream palette
-    placeholderTextColor: "text-amber-900/70",
-    imageSrc: project1Img
-  },
-  {
-    id: "project-2",
-    numberLabel: "Project 2",
-    title: "Semantic Router & LLM Caching Gateway",
-    subtitle: "AI & Infrastructure Gateway",
-    techStack: ["Python", "FastAPI", "Redis", "Docker"],
-    bullets: [
-      "Built an LLM gateway with semantic caching (vector similarity, Redis-backed) and complexity-based routing across cloud and local providers, reducing repeated API calls.",
-      "Added quality-gated caching, and provider failover; benchmarking, and load testing, backed by 145 automated tests."
-    ],
-    placeholderBg: "bg-[#2b41f7]", // Electric Royal Blue
-    placeholderTextColor: "text-white",
-    imageSrc: project2Img,
-    githubUrl: "https://github.com/naveendha1710/LLM-Gateway_Semantic-Caching-Complexity-Based-Routing"
-  },
-  {
-    id: "project-3",
-    numberLabel: "Project 3",
-    title: "LLM Quantization Pipeline",
-    subtitle: "Local AI & Benchmarking Toolkit",
-    techStack: ["Python", "Hugging Face", "optimum-quanto"],
-    bullets: [
-      "Built a pure-Python pipeline to download, quantize (INT8/INT4), benchmark, and run LLMs (Qwen2.5, Llama 3) locally on CPU, without relying on pre-quantized downloads.",
-      "Designed modular CLI scripts to benchmark size, load time, and tokens/s across BF16, INT8, and INT4 quantization levels, plus an interactive chat mode."
-    ],
-    placeholderBg: "bg-[#f1f1f3]", // Cool gray
-    placeholderTextColor: "text-slate-800",
-    imageSrc: project3Img,
-    githubUrl: "https://github.com/naveendha1710/quantize_llm_model"
-  }
-];
+export type Project = ProjectItem;
 
 // Interactive Floating AAA Gamer Cursor Badge with Soft Glow (exact emilianmisera.com UI/UX)
 const CursorBadge = ({
@@ -246,7 +185,7 @@ const ProjectsSection = memo(function ProjectsSection() {
         </motion.div>
 
         <CreepyButton
-          onClick={() => window.open('https://github.com/naveendha1710', '_blank', 'noopener,noreferrer')}
+          onClick={() => window.open(profile.socialLinks.github.url, '_blank', 'noopener,noreferrer')}
           className="bg-black translate-y-3 shadow-none"
           coverClassName="bg-[#0a0a0c] text-white hover:bg-slate-900 border border-slate-800 shadow-none"
         >

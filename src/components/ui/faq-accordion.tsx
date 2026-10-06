@@ -2,162 +2,17 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
+import { faqItemsData, FaqItemData } from "@/data/profile";
 
-export interface FaqItem {
-  question: string;
-  answer: React.ReactNode;
-}
+export type FaqItem = FaqItemData;
 
 export interface FaqAccordionProps extends React.HTMLAttributes<HTMLDivElement> {
   items?: FaqItem[];
   title?: string;
 }
 
-const DEFAULT_ITEMS: FaqItem[] = [
-  {
-    question: "Education & Qualifications",
-    answer: (
-      <div className="space-y-1.5 font-sans">
-        <h4 className="font-bold text-slate-900 text-base sm:text-lg">
-          B. Sc Artificial Intelligence & Machine Learning
-        </h4>
-        <p className="text-slate-600 text-sm">
-          Rathinam global deemed to be university, Coimbatore
-        </p>
-        <div className="text-xs font-mono text-slate-500 mt-1">
-          2024 – 2027
-        </div>
-      </div>
-    ),
-  },
-  {
-    question: "AI Developer — Rathinam Group of Institutions (Internship)",
-    answer: (
-      <div className="space-y-2 font-sans text-sm sm:text-base leading-relaxed text-slate-700">
-        <div className="text-xs font-mono text-slate-500 mb-2">Sep 2025 – Aug 2026</div>
-        <ul className="space-y-1.5 list-disc pl-4">
-          <li>
-            Developed an institution-wide ERP System as an AI developer, currently live with 100+ users and active in production use.
-          </li>
-          <li>
-            Built modules for ticketing and asset management, enabling tracking of 50,000+ labeled assets across the institution.
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    question: "Software Tester — SMARTMATE Systems (Internship)",
-    answer: (
-      <div className="space-y-2 font-sans text-sm sm:text-base leading-relaxed text-slate-700">
-        <div className="text-xs font-mono text-slate-500 mb-2">Jan 2025 – Aug 2025</div>
-        <ul className="space-y-1.5 list-disc pl-4">
-          <li>
-            Identified and reported 80+ UI/UX bugs across the application, improving user experience and software stability.
-          </li>
-          <li>
-            Conducted cross-device testing to ensure consistent functionality and interface quality.
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    question: "BNB Chain x YZi Labs Hack Series — Bengaluru",
-    answer: (
-      <div className="space-y-2 font-sans text-sm sm:text-base leading-relaxed text-slate-700">
-        <div className="text-xs font-mono text-slate-500 mb-2">Feb 2026 • National Hackathon</div>
-        <ul className="space-y-1.5 list-disc pl-4">
-          <li>
-            Finals (Top 50) in the Web3 Track.
-          </li>
-          <li>
-            Finalist in the national hack series held in Bengaluru.
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    question: "Certifications & Specializations",
-    answer: (
-      <div className="space-y-2.5 font-sans text-sm sm:text-base leading-relaxed text-slate-700">
-        <div className="text-xs font-mono text-slate-500 mb-2">Verified Professional Certifications</div>
-        <ul className="space-y-2 list-none p-0">
-          <li className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-1.5">
-            <span className="font-medium text-slate-900">Building with the Claude API</span>
-            <a
-              href="https://verify.skilljar.com/c/vf88223oydx7"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-          <li className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-1.5">
-            <span className="font-medium text-slate-900">Claude 101</span>
-            <a
-              href="https://verify.skilljar.com/c/os379o7gmra2"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-          <li className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-1.5">
-            <span className="font-medium text-slate-900">Introduction to Agent Skills</span>
-            <a
-              href="https://verify.skilljar.com/c/qe93iuagc3zy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-          <li className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-1.5">
-            <span className="font-medium text-slate-900">Introduction to Model Context Protocol (MCP)</span>
-            <a
-              href="https://verify.skilljar.com/c/sutmkqburgbd"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-          <li className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-1.5">
-            <span className="font-medium text-slate-900">Agentic AI for Developers: Concepts and Application for Enterprises</span>
-            <a
-              href="https://www.linkedin.com/learning/certificates/a3df8a5f5c782b922851344e2d0057a1dd29b586ada70f57b5755e9b1ec2299a"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-          <li className="flex items-center justify-between gap-2">
-            <span className="font-medium text-slate-900">Docker Foundations Professional Certificate</span>
-            <a
-              href="https://www.linkedin.com/learning/certificates/058d254049f204ba9297a5c20d68ccc5be0286a52070c329cc618b9c41a690c9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono text-indigo-600 hover:text-indigo-800 underline flex-shrink-0"
-            >
-              Verify ↗
-            </a>
-          </li>
-        </ul>
-      </div>
-    ),
-  },
-];
-
 export function FaqAccordion({
-  items = DEFAULT_ITEMS,
+  items = faqItemsData,
   title = "Background & Credentials",
   className,
   ...props
